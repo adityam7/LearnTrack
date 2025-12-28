@@ -3,7 +3,7 @@ package com.airtribe.learntrack.entity;
 import com.airtribe.learntrack.util.InputValidator;
 
 public class Course {
-    private Long id;
+    private int id;
     private String courseName;
     private String description;
     private int durationInWeeks;
@@ -15,7 +15,7 @@ public class Course {
     }
 
     // Parameterized constructor without active status
-    public Course(Long id, String courseName, String description, int durationInWeeks) {
+    public Course(int id, String courseName, String description, int durationInWeeks) {
         setId(id);
         setCourseName(courseName);
         setDescription(description);
@@ -24,7 +24,7 @@ public class Course {
     }
 
     // Full parameterized constructor with all fields
-    public Course(Long id, String courseName, String description, int durationInWeeks, boolean active) {
+    public Course(int id, String courseName, String description, int durationInWeeks, boolean active) {
         setId(id);
         setCourseName(courseName);
         setDescription(description);
@@ -32,11 +32,11 @@ public class Course {
         this.active = active;
     }
 
-    public Long getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(int id) {
         InputValidator.validateId(id, "Course ID");
         this.id = id;
     }

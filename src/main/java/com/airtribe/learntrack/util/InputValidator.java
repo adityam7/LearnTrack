@@ -45,15 +45,13 @@ public class InputValidator {
     }
 
     /**
-     * Validates that an ID is not null and is positive
+     * Validates that an ID is positive
      * @param id the ID to validate
      * @param fieldName the name of the field being validated (for error messages)
-     * @throws IllegalArgumentException if the ID is null or not positive
+     * @throws IllegalArgumentException if the ID is not positive
      */
-    public static void validateId(Long id, String fieldName) {
-        if (id == null) {
-            throw new IllegalArgumentException(fieldName + " cannot be null");
-        }
+    public static void validateId(int id, String fieldName) {
+        // No null check needed for primitives
         if (id <= 0) {
             throw new IllegalArgumentException(fieldName + " must be a positive number");
         }

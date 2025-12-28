@@ -12,7 +12,7 @@ public class Trainer extends Person {
     }
 
     // Parameterized constructor demonstrating use of super
-    public Trainer(Long id, String firstName, String lastName, String email, String specialization, int yearsOfExperience) {
+    public Trainer(int id, String firstName, String lastName, String email, String specialization, int yearsOfExperience) {
         super(id, firstName, lastName, email); // Call parent constructor with super
         setSpecialization(specialization);
         setYearsOfExperience(yearsOfExperience);
