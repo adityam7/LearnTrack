@@ -5,9 +5,9 @@ import com.airtribe.learntrack.util.InputValidator;
 import java.time.LocalDate;
 
 public class Enrollment {
-    private Long id;
-    private Long studentId;
-    private Long courseId;
+    private int id;
+    private int studentId;
+    private int courseId;
     private LocalDate enrollmentDate;
     private EnrollmentStatus status;
 
@@ -18,7 +18,7 @@ public class Enrollment {
     }
 
     // Parameterized constructor without status (defaults to ACTIVE)
-    public Enrollment(Long id, Long studentId, Long courseId, LocalDate enrollmentDate) {
+    public Enrollment(int id, int studentId, int courseId, LocalDate enrollmentDate) {
         setId(id);
         setStudentId(studentId);
         setCourseId(courseId);
@@ -27,7 +27,7 @@ public class Enrollment {
     }
 
     // Full parameterized constructor with all fields
-    public Enrollment(Long id, Long studentId, Long courseId, LocalDate enrollmentDate, EnrollmentStatus status) {
+    public Enrollment(int id, int studentId, int courseId, LocalDate enrollmentDate, EnrollmentStatus status) {
         setId(id);
         setStudentId(studentId);
         setCourseId(courseId);
@@ -35,29 +35,29 @@ public class Enrollment {
         setStatus(status);
     }
 
-    public Long getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(int id) {
         InputValidator.validateId(id, "Enrollment ID");
         this.id = id;
     }
 
-    public Long getStudentId() {
+    public int getStudentId() {
         return studentId;
     }
 
-    public void setStudentId(Long studentId) {
+    public void setStudentId(int studentId) {
         InputValidator.validateId(studentId, "Student ID");
         this.studentId = studentId;
     }
 
-    public Long getCourseId() {
+    public int getCourseId() {
         return courseId;
     }
 
-    public void setCourseId(Long courseId) {
+    public void setCourseId(int courseId) {
         InputValidator.validateId(courseId, "Course ID");
         this.courseId = courseId;
     }

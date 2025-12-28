@@ -13,7 +13,7 @@ public class Student extends Person {
     }
 
     // Constructor overloading - without email (demonstrates constructor overloading)
-    public Student(Long id, String firstName, String lastName, String batch) {
+    public Student(int id, String firstName, String lastName, String batch) {
         super();
         setId(id);
         setFirstName(firstName);
@@ -23,14 +23,14 @@ public class Student extends Person {
     }
 
     // Constructor overloading - with email
-    public Student(Long id, String firstName, String lastName, String email, String batch) {
+    public Student(int id, String firstName, String lastName, String email, String batch) {
         super(id, firstName, lastName, email);
         setBatch(batch);
         this.active = true;
     }
 
     // Full constructor with all fields including active status
-    public Student(Long id, String firstName, String lastName, String email, String batch, boolean active) {
+    public Student(int id, String firstName, String lastName, String email, String batch, boolean active) {
         super(id, firstName, lastName, email);
         setBatch(batch);
         this.active = active;
