@@ -190,8 +190,8 @@ public class Main {
         System.out.println("   - Persons:     100 - 999    (900 IDs)");
         System.out.println("   - Students:    1000 - 1999  (1000 IDs)");
         System.out.println("   - Courses:     2000 - 2999  (1000 IDs)");
-        System.out.println("   - Enrollments: 3000 - 9999  (7000 IDs)");
-        System.out.println("   - Trainers:    10000 - 10999 (1000 IDs)\n");
+        System.out.println("   - Enrollments: 3000 - 3999  (1000 IDs)");
+        System.out.println("   - Trainers:    4000 - 4999 (1000 IDs)\n");
 
         System.out.println("3. Generating IDs for different entities:");
 
