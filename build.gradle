@@ -1,9 +1,14 @@
 plugins {
     id 'java'
+    id 'application'
 }
 
 group = 'com.airtribe.learntrack'
 version = '1.0-SNAPSHOT'
+
+application {
+    mainClass = 'com.airtribe.learntrack.Main'
+}
 
 repositories {
     mavenCentral()

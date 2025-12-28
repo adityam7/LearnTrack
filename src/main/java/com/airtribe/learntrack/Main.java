@@ -12,6 +12,7 @@ import com.airtribe.learntrack.service.CourseService;
 import com.airtribe.learntrack.service.EnrollmentService;
 import com.airtribe.learntrack.service.StudentService;
 import com.airtribe.learntrack.util.ConsoleUtils;
+import com.airtribe.learntrack.util.IdGenerator;
 
 import java.util.List;
 
@@ -465,6 +466,38 @@ public class Main {
         System.out.println("  Active: " + enrollmentService.getEnrollmentCountByStatus(EnrollmentStatus.ACTIVE));
         System.out.println("  Completed: " + enrollmentService.getEnrollmentCountByStatus(EnrollmentStatus.COMPLETED));
         System.out.println("  Cancelled: " + enrollmentService.getEnrollmentCountByStatus(EnrollmentStatus.CANCELLED));
+
+        // Display capacity warnings
+        System.out.println("\nCapacity Warnings:");
+        boolean hasWarnings = false;
+
+        if (IdGenerator.getRemainingStudentIds() < 100) {
+            ConsoleUtils.printWarning("Student ID capacity low: " +
+                    IdGenerator.getRemainingStudentIds() + " IDs remaining");
+            hasWarnings = true;
+        }
+
+        if (IdGenerator.getRemainingCourseIds() < 100) {
+            ConsoleUtils.printWarning("Course ID capacity low: " +
+                    IdGenerator.getRemainingCourseIds() + " IDs remaining");
+            hasWarnings = true;
+        }
+
+        if (IdGenerator.getRemainingEnrollmentIds() < 100) {
+            ConsoleUtils.printWarning("Enrollment ID capacity low: " +
+                    IdGenerator.getRemainingEnrollmentIds() + " IDs remaining");
+            hasWarnings = true;
+        }
+
+        if (IdGenerator.getRemainingTrainerIds() < 100) {
+            ConsoleUtils.printWarning("Trainer ID capacity low: " +
+                    IdGenerator.getRemainingTrainerIds() + " IDs remaining");
+            hasWarnings = true;
+        }
+
+        if (!hasWarnings) {
+            ConsoleUtils.printInfo("All ID ranges have sufficient capacity");
+        }
 
         ConsoleUtils.pressEnterToContinue();
     }
