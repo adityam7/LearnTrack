@@ -1,277 +1,471 @@
 package com.airtribe.learntrack;
 
-import com.airtribe.learntrack.entity.*;
+import com.airtribe.learntrack.entity.Course;
+import com.airtribe.learntrack.entity.Enrollment;
+import com.airtribe.learntrack.entity.Student;
 import com.airtribe.learntrack.enums.EnrollmentStatus;
-import com.airtribe.learntrack.util.IdGenerator;
-import java.time.LocalDate;
+import com.airtribe.learntrack.exception.EntityNotFoundException;
+import com.airtribe.learntrack.repository.CourseRepository;
+import com.airtribe.learntrack.repository.EnrollmentRepository;
+import com.airtribe.learntrack.repository.StudentRepository;
+import com.airtribe.learntrack.service.CourseService;
+import com.airtribe.learntrack.service.EnrollmentService;
+import com.airtribe.learntrack.service.StudentService;
+import com.airtribe.learntrack.util.ConsoleUtils;
+
+import java.util.List;
 
 public class Main {
+    private static StudentService studentService;
+    private static CourseService courseService;
+    private static EnrollmentService enrollmentService;
+
     public static void main(String[] args) {
-        System.out.println("=== LearnTrack - Course Management System ===\n");
+        initializeServices();
+        ConsoleUtils.printHeader("LearnTrack - Course Management System");
 
-        // 1. Demonstrate Person class
-        demonstratePerson();
+        boolean running = true;
+        while (running) {
+            try {
+                displayMainMenu();
+                int choice = ConsoleUtils.readIntInRange("Enter your choice: ", 0, 4);
 
-        // 2. Demonstrate Student class (with constructor overloading)
-        demonstrateStudent();
+                switch (choice) {
+                    case 1 -> handleStudentManagement();
+                    case 2 -> handleCourseManagement();
+                    case 3 -> handleEnrollmentManagement();
+                    case 4 -> displayStatistics();
+                    case 0 -> {
+                        running = false;
+                        ConsoleUtils.printSuccess("Thank you for using LearnTrack. Goodbye!");
+                    }
+                    default -> ConsoleUtils.printError("Invalid option. Please try again.");
+                }
+            } catch (Exception e) {
+                ConsoleUtils.printError("An unexpected error occurred: " + e.getMessage());
+                ConsoleUtils.pressEnterToContinue();
+            }
+        }
 
-        // 3. Demonstrate Course class
-        demonstrateCourse();
-
-        // 4. Demonstrate Enrollment class
-        demonstrateEnrollment();
-
-        // 5. Demonstrate input validation
-        demonstrateValidation();
-
-        // 6. Demonstrate Inheritance and Method Overriding
-        demonstrateInheritance();
-
-        // 7. Demonstrate IdGenerator Utility
-        demonstrateIdGenerator();
-
-        System.out.println("\n=== Demo Complete ===");
+        ConsoleUtils.closeScanner();
     }
 
-    private static void demonstratePerson() {
-        System.out.println("--- Person Class Demo ---");
+    private static void initializeServices() {
+        StudentRepository studentRepository = new StudentRepository();
+        CourseRepository courseRepository = new CourseRepository();
+        EnrollmentRepository enrollmentRepository = new EnrollmentRepository();
 
-        Person person = new Person(IdGenerator.getNextPersonId(), "John", "Doe", "john.doe@example.com");
-        System.out.println(person);
-        System.out.println("Display Name: " + person.getDisplayName());
-        System.out.println();
+        studentService = new StudentService(studentRepository);
+        courseService = new CourseService(courseRepository);
+        enrollmentService = new EnrollmentService(enrollmentRepository, studentRepository, courseRepository);
     }
 
-    private static void demonstrateStudent() {
-        System.out.println("--- Student Class Demo (Constructor Overloading) ---");
-
-        // Constructor 1: Without email
-        Student student1 = new Student(IdGenerator.getNextStudentId(), "Alice", "Smith", "Batch-2024-Jan");
-        System.out.println("Student 1 (without email): " + student1);
-
-        // Constructor 2: With email
-        Student student2 = new Student(IdGenerator.getNextStudentId(), "Bob", "Johnson", "bob.j@example.com", "Batch-2024-Jan");
-        System.out.println("Student 2 (with email): " + student2);
-
-        // Constructor 3: Full constructor with active status
-        Student student3 = new Student(IdGenerator.getNextStudentId(), "Carol", "Williams", "carol.w@example.com", "Batch-2024-Feb", false);
-        System.out.println("Student 3 (with active status): " + student3);
-
-        // Using setters
-        student1.setEmail("alice.smith@example.com");
-        System.out.println("Student 1 after setting email: " + student1.getEmail());
-        System.out.println("Student 1 Display Name: " + student1.getDisplayName());
-        System.out.println();
+    private static void displayMainMenu() {
+        ConsoleUtils.printSubHeader("Main Menu");
+        System.out.println("1. Student Management");
+        System.out.println("2. Course Management");
+        System.out.println("3. Enrollment Management");
+        System.out.println("4. View Statistics");
+        System.out.println("0. Exit");
+        ConsoleUtils.printSeparator();
     }
 
-    private static void demonstrateCourse() {
-        System.out.println("--- Course Class Demo ---");
+    // ==================== STUDENT MANAGEMENT ====================
 
-        Course course1 = new Course(IdGenerator.getNextCourseId(), "Java Programming", "Comprehensive Java course covering basics to advanced topics", 12);
-        System.out.println(course1);
+    private static void handleStudentManagement() {
+        boolean back = false;
+        while (!back) {
+            try {
+                displayStudentMenu();
+                int choice = ConsoleUtils.readIntInRange("Enter your choice: ", 0, 4);
 
-        Course course2 = new Course(IdGenerator.getNextCourseId(), "Web Development", "Full-stack web development with modern frameworks", 16, true);
-        System.out.println(course2);
-
-        // Using setters
-        course1.setActive(true);
-        System.out.println("Course 1 is active: " + course1.isActive());
-        System.out.println();
+                switch (choice) {
+                    case 1 -> addNewStudent();
+                    case 2 -> viewAllStudents();
+                    case 3 -> searchStudentById();
+                    case 4 -> deactivateStudent();
+                    case 0 -> back = true;
+                    default -> ConsoleUtils.printError("Invalid option. Please try again.");
+                }
+            } catch (Exception e) {
+                ConsoleUtils.printError("Error in student management: " + e.getMessage());
+                ConsoleUtils.pressEnterToContinue();
+            }
+        }
     }
 
-    private static void demonstrateEnrollment() {
-        System.out.println("--- Enrollment Class Demo ---");
-
-        // Default constructor (uses current date and ACTIVE status)
-        Enrollment enrollment1 = new Enrollment();
-        enrollment1.setId(IdGenerator.getNextEnrollmentId());
-        enrollment1.setStudentId(1001);  // Reference to student1
-        enrollment1.setCourseId(2001);    // Reference to course1
-        System.out.println("Enrollment 1 (default): " + enrollment1);
-
-        // Constructor with enrollment date
-        Enrollment enrollment2 = new Enrollment(IdGenerator.getNextEnrollmentId(), 1002, 2002, LocalDate.of(2024, 1, 15));
-        System.out.println("Enrollment 2: " + enrollment2);
-
-        // Full constructor with status
-        Enrollment enrollment3 = new Enrollment(IdGenerator.getNextEnrollmentId(), 1003, 2001, LocalDate.of(2024, 2, 1), EnrollmentStatus.COMPLETED);
-        System.out.println("Enrollment 3: " + enrollment3);
-
-        // Update enrollment status
-        enrollment2.setStatus(EnrollmentStatus.CANCELLED);
-        System.out.println("Enrollment 2 after status update: " + enrollment2);
-        System.out.println();
+    private static void displayStudentMenu() {
+        ConsoleUtils.printSubHeader("Student Management");
+        System.out.println("1. Add New Student");
+        System.out.println("2. View All Students");
+        System.out.println("3. Search Student by ID");
+        System.out.println("4. Deactivate Student");
+        System.out.println("0. Back to Main Menu");
+        ConsoleUtils.printSeparator();
     }
 
-    private static void demonstrateValidation() {
-        System.out.println("--- Input Validation Demo ---");
-
-        // Try to create a student with invalid data
+    private static void addNewStudent() {
         try {
-            Student invalidStudent = new Student(-1, "Test", "User", "Batch-2024");
-            System.out.println(invalidStudent);
-        } catch (IllegalArgumentException e) {
-            System.out.println("Caught validation error: " + e.getMessage());
-        }
+            ConsoleUtils.printSubHeader("Add New Student");
 
-        // Try to set an invalid email
-        try {
-            Person person = new Person();
-            person.setId(1);
-            person.setFirstName("Test");
-            person.setLastName("User");
-            person.setEmail("invalid-email");
-        } catch (IllegalArgumentException e) {
-            System.out.println("Caught validation error: " + e.getMessage());
-        }
+            String firstName = ConsoleUtils.readLine("Enter first name: ");
+            String lastName = ConsoleUtils.readLine("Enter last name: ");
+            String batch = ConsoleUtils.readLine("Enter batch: ");
+            boolean includeEmail = ConsoleUtils.readBoolean("Include email?");
 
-        // Try to create a course with invalid duration
-        try {
-            Course invalidCourse = new Course(1, "Test Course", "Description", -5);
-        } catch (IllegalArgumentException e) {
-            System.out.println("Caught validation error: " + e.getMessage());
-        }
+            Student student;
+            if (includeEmail) {
+                String email = ConsoleUtils.readLine("Enter email: ");
+                student = studentService.createStudent(firstName, lastName, email, batch);
+            } else {
+                student = studentService.createStudent(firstName, lastName, batch);
+            }
 
-        System.out.println("Validation is working correctly!");
+            ConsoleUtils.printSuccess("Student added successfully!");
+            System.out.println(student);
+            ConsoleUtils.pressEnterToContinue();
+        } catch (IllegalArgumentException e) {
+            ConsoleUtils.printError("Validation error: " + e.getMessage());
+            ConsoleUtils.pressEnterToContinue();
+        }
     }
 
-    private static void demonstrateInheritance() {
-        System.out.println("\n--- Inheritance & Method Overriding Demo ---");
+    private static void viewAllStudents() {
+        ConsoleUtils.printSubHeader("All Students");
 
-        // Create a Person (base class)
-        Person person = new Person(IdGenerator.getNextPersonId(), "John", "Doe", "john.doe@example.com");
-
-        // Create a Student (extends Person)
-        Student student = new Student(IdGenerator.getNextStudentId(), "Alice", "Smith", "alice@example.com", "Batch-2024-Jan");
-
-        // Create a Trainer (extends Person)
-        Trainer trainer = new Trainer(IdGenerator.getNextTrainerId(), "Dr. Robert", "Brown", "robert.brown@example.com", "Java & Backend Development", 10);
-
-        System.out.println("\n1. Use of 'super' in constructors:");
-        System.out.println("   - Student constructor calls super(id, firstName, lastName, email)");
-        System.out.println("   - Trainer constructor calls super(id, firstName, lastName, email)");
-        System.out.println("   - This demonstrates how child classes use 'super' to initialize parent fields\n");
-
-        System.out.println("2. Method Overriding - getDisplayName():");
-        System.out.println("   Person (base class):   " + person.getDisplayName());
-        System.out.println("   Student (override):    " + student.getDisplayName());
-        System.out.println("   Trainer (override):    " + trainer.getDisplayName());
-
-        System.out.println("\n3. How overriding works:");
-        System.out.println("   - Person.getDisplayName() returns: 'firstName lastName'");
-        System.out.println("   - Student.getDisplayName() calls super.getDisplayName() and adds batch info");
-        System.out.println("   - Trainer.getDisplayName() calls super.getDisplayName() and adds specialization info");
-
-        System.out.println("\n4. Polymorphism demonstration:");
-        Person[] people = {person, student, trainer};
-        System.out.println("   Calling getDisplayName() on array of Person type:");
-        for (int i = 0; i < people.length; i++) {
-            System.out.println("   [" + i + "] " + people[i].getDisplayName());
+        List<Student> students = studentService.getAll();
+        if (students.isEmpty()) {
+            ConsoleUtils.printInfo("No students found.");
+        } else {
+            System.out.printf("%-10s %-20s %-30s %-20s %-10s%n",
+                    "ID", "Name", "Email", "Batch", "Active");
+            ConsoleUtils.printSeparator();
+            for (Student student : students) {
+                System.out.printf("%-10d %-20s %-30s %-20s %-10s%n",
+                        student.getId(),
+                        student.getFirstName() + " " + student.getLastName(),
+                        student.getEmail() != null ? student.getEmail() : "N/A",
+                        student.getBatch(),
+                        student.isActive() ? "Yes" : "No");
+            }
         }
-        System.out.println("   Notice: Each object calls its own version of getDisplayName()!");
-
-        System.out.println("\n5. Trainer specific details:");
-        System.out.println(trainer);
-        System.out.println("   Specialization: " + trainer.getSpecialization());
-        System.out.println("   Years of Experience: " + trainer.getYearsOfExperience());
+        ConsoleUtils.pressEnterToContinue();
     }
 
-    private static void demonstrateIdGenerator() {
-        System.out.println("\n--- IdGenerator Utility Demo ---");
+    private static void searchStudentById() {
+        try {
+            int id = ConsoleUtils.readInt("Enter student ID: ");
+            Student student = studentService.getById(id);
 
-        System.out.println("\n1. Static Fields and Methods:");
-        System.out.println("   - IdGenerator uses static fields to maintain ID counters");
-        System.out.println("   - Static methods allow ID generation without creating instances");
-        System.out.println("   - Each entity type has its own counter starting from different ranges");
-        System.out.println("   - Thread-safe with synchronized methods");
-        System.out.println("   - Range-based allocation prevents ID collisions\n");
+            ConsoleUtils.printSubHeader("Student Details");
+            System.out.println(student);
+            System.out.println("Display Name: " + student.getDisplayName());
+            ConsoleUtils.pressEnterToContinue();
+        } catch (EntityNotFoundException e) {
+            ConsoleUtils.printError(e.getMessage());
+            ConsoleUtils.pressEnterToContinue();
+        }
+    }
 
-        System.out.println("2. ID Ranges:");
-        System.out.println("   - Persons:     100 - 999    (900 IDs)");
-        System.out.println("   - Students:    1000 - 1999  (1000 IDs)");
-        System.out.println("   - Courses:     2000 - 2999  (1000 IDs)");
-        System.out.println("   - Enrollments: 3000 - 3999  (1000 IDs)");
-        System.out.println("   - Trainers:    4000 - 4999 (1000 IDs)\n");
+    private static void deactivateStudent() {
+        try {
+            int id = ConsoleUtils.readInt("Enter student ID to deactivate: ");
+            Student student = studentService.getById(id);
 
-        System.out.println("3. Generating IDs for different entities:");
+            if (!student.isActive()) {
+                ConsoleUtils.printInfo("Student is already inactive.");
+            } else {
+                studentService.deactivateStudent(id);
+                ConsoleUtils.printSuccess("Student deactivated successfully!");
+            }
+            ConsoleUtils.pressEnterToContinue();
+        } catch (EntityNotFoundException e) {
+            ConsoleUtils.printError(e.getMessage());
+            ConsoleUtils.pressEnterToContinue();
+        }
+    }
 
-        // Generate Person IDs
-        System.out.println("\n   Person IDs:");
-        int personId1 = IdGenerator.getNextPersonId();
-        int personId2 = IdGenerator.getNextPersonId();
-        int personId3 = IdGenerator.getNextPersonId();
-        System.out.println("   Generated Person IDs: " + personId1 + ", " + personId2 + ", " + personId3);
+    // ==================== COURSE MANAGEMENT ====================
 
-        // Generate Student IDs
-        System.out.println("\n   Student IDs:");
-        int studentId1 = IdGenerator.getNextStudentId();
-        int studentId2 = IdGenerator.getNextStudentId();
-        int studentId3 = IdGenerator.getNextStudentId();
-        System.out.println("   Generated Student IDs: " + studentId1 + ", " + studentId2 + ", " + studentId3);
+    private static void handleCourseManagement() {
+        boolean back = false;
+        while (!back) {
+            try {
+                displayCourseMenu();
+                int choice = ConsoleUtils.readIntInRange("Enter your choice: ", 0, 5);
 
-        // Generate Trainer IDs
-        System.out.println("\n   Trainer IDs:");
-        int trainerId1 = IdGenerator.getNextTrainerId();
-        int trainerId2 = IdGenerator.getNextTrainerId();
-        System.out.println("   Generated Trainer IDs: " + trainerId1 + ", " + trainerId2);
+                switch (choice) {
+                    case 1 -> addNewCourse();
+                    case 2 -> viewAllCourses();
+                    case 3 -> searchCourseById();
+                    case 4 -> activateCourse();
+                    case 5 -> deactivateCourse();
+                    case 0 -> back = true;
+                    default -> ConsoleUtils.printError("Invalid option. Please try again.");
+                }
+            } catch (Exception e) {
+                ConsoleUtils.printError("Error in course management: " + e.getMessage());
+                ConsoleUtils.pressEnterToContinue();
+            }
+        }
+    }
 
-        // Generate Course IDs
-        System.out.println("\n   Course IDs:");
-        int courseId1 = IdGenerator.getNextCourseId();
-        int courseId2 = IdGenerator.getNextCourseId();
-        System.out.println("   Generated Course IDs: " + courseId1 + ", " + courseId2);
+    private static void displayCourseMenu() {
+        ConsoleUtils.printSubHeader("Course Management");
+        System.out.println("1. Add New Course");
+        System.out.println("2. View All Courses");
+        System.out.println("3. Search Course by ID");
+        System.out.println("4. Activate Course");
+        System.out.println("5. Deactivate Course");
+        System.out.println("0. Back to Main Menu");
+        ConsoleUtils.printSeparator();
+    }
 
-        // Generate Enrollment IDs
-        System.out.println("\n   Enrollment IDs:");
-        int enrollmentId1 = IdGenerator.getNextEnrollmentId();
-        int enrollmentId2 = IdGenerator.getNextEnrollmentId();
-        System.out.println("   Generated Enrollment IDs: " + enrollmentId1 + ", " + enrollmentId2);
+    private static void addNewCourse() {
+        try {
+            ConsoleUtils.printSubHeader("Add New Course");
 
-        System.out.println("\n4. Using IdGenerator with entity creation:");
-        Student newStudent = new Student(
-                IdGenerator.getNextStudentId(),
-                "Emily",
-                "Davis",
-                "emily.davis@example.com",
-                "Batch-2025-Jan"
-        );
-        System.out.println("   Created student with auto-generated ID: " + newStudent);
+            String courseName = ConsoleUtils.readLine("Enter course name: ");
+            String description = ConsoleUtils.readLine("Enter description: ");
+            int durationInWeeks = ConsoleUtils.readInt("Enter duration in weeks: ");
 
-        Course newCourse = new Course(
-                IdGenerator.getNextCourseId(),
-                "Advanced Java",
-                "Deep dive into Java advanced concepts",
-                16
-        );
-        System.out.println("   Created course with auto-generated ID: " + newCourse);
+            Course course = courseService.createCourse(courseName, description, durationInWeeks);
 
-        Enrollment newEnrollment = new Enrollment(
-                IdGenerator.getNextEnrollmentId(),
-                newStudent.getId(),
-                newCourse.getId(),
-                LocalDate.now()
-        );
-        System.out.println("   Created enrollment with auto-generated ID: " + newEnrollment);
+            ConsoleUtils.printSuccess("Course added successfully!");
+            System.out.println(course);
+            ConsoleUtils.pressEnterToContinue();
+        } catch (IllegalArgumentException e) {
+            ConsoleUtils.printError("Validation error: " + e.getMessage());
+            ConsoleUtils.pressEnterToContinue();
+        }
+    }
 
-        System.out.println("\n5. Capacity Monitoring:");
-        System.out.println("   - Remaining Person IDs: " + IdGenerator.getRemainingPersonIds());
-        System.out.println("   - Remaining Student IDs: " + IdGenerator.getRemainingStudentIds());
-        System.out.println("   - Remaining Trainer IDs: " + IdGenerator.getRemainingTrainerIds());
-        System.out.println("   - Remaining Course IDs: " + IdGenerator.getRemainingCourseIds());
-        System.out.println("   - Remaining Enrollment IDs: " + IdGenerator.getRemainingEnrollmentIds());
+    private static void viewAllCourses() {
+        ConsoleUtils.printSubHeader("All Courses");
 
-        System.out.println("\n6. Capacity Summary:");
-        System.out.println("   " + IdGenerator.getCapacitySummary());
+        List<Course> courses = courseService.getAll();
+        if (courses.isEmpty()) {
+            ConsoleUtils.printInfo("No courses found.");
+        } else {
+            System.out.printf("%-10s %-30s %-15s %-10s%n",
+                    "ID", "Course Name", "Duration (weeks)", "Active");
+            ConsoleUtils.printSeparator();
+            for (Course course : courses) {
+                System.out.printf("%-10d %-30s %-15d %-10s%n",
+                        course.getId(),
+                        course.getCourseName(),
+                        course.getDurationInWeeks(),
+                        course.isActive() ? "Yes" : "No");
+            }
+        }
+        ConsoleUtils.pressEnterToContinue();
+    }
 
-        System.out.println("\n7. Full Capacity Report:");
-        IdGenerator.printCapacityReport();
+    private static void searchCourseById() {
+        try {
+            int id = ConsoleUtils.readInt("Enter course ID: ");
+            Course course = courseService.getById(id);
 
-        System.out.println("8. Benefits of static utility class:");
-        System.out.println("   - No need to create instances (constructor is private)");
-        System.out.println("   - Centralized ID management across the application");
-        System.out.println("   - Each entity type has separate ID ranges to avoid conflicts");
-        System.out.println("   - Thread-safe ID generation");
-        System.out.println("   - Capacity tracking and warnings at 90% usage");
-        System.out.println("   - Can validate and register external IDs");
+            ConsoleUtils.printSubHeader("Course Details");
+            System.out.println(course);
+            ConsoleUtils.pressEnterToContinue();
+        } catch (EntityNotFoundException e) {
+            ConsoleUtils.printError(e.getMessage());
+            ConsoleUtils.pressEnterToContinue();
+        }
+    }
+
+    private static void activateCourse() {
+        try {
+            int id = ConsoleUtils.readInt("Enter course ID to activate: ");
+            Course course = courseService.getById(id);
+
+            if (course.isActive()) {
+                ConsoleUtils.printInfo("Course is already active.");
+            } else {
+                courseService.activateCourse(id);
+                ConsoleUtils.printSuccess("Course activated successfully!");
+            }
+            ConsoleUtils.pressEnterToContinue();
+        } catch (EntityNotFoundException e) {
+            ConsoleUtils.printError(e.getMessage());
+            ConsoleUtils.pressEnterToContinue();
+        }
+    }
+
+    private static void deactivateCourse() {
+        try {
+            int id = ConsoleUtils.readInt("Enter course ID to deactivate: ");
+            Course course = courseService.getById(id);
+
+            if (!course.isActive()) {
+                ConsoleUtils.printInfo("Course is already inactive.");
+            } else {
+                courseService.deactivateCourse(id);
+                ConsoleUtils.printSuccess("Course deactivated successfully!");
+            }
+            ConsoleUtils.pressEnterToContinue();
+        } catch (EntityNotFoundException e) {
+            ConsoleUtils.printError(e.getMessage());
+            ConsoleUtils.pressEnterToContinue();
+        }
+    }
+
+    // ==================== ENROLLMENT MANAGEMENT ====================
+
+    private static void handleEnrollmentManagement() {
+        boolean back = false;
+        while (!back) {
+            try {
+                displayEnrollmentMenu();
+                int choice = ConsoleUtils.readIntInRange("Enter your choice: ", 0, 4);
+
+                switch (choice) {
+                    case 1 -> enrollStudent();
+                    case 2 -> viewEnrollmentsByStudent();
+                    case 3 -> viewAllEnrollments();
+                    case 4 -> updateEnrollmentStatus();
+                    case 0 -> back = true;
+                    default -> ConsoleUtils.printError("Invalid option. Please try again.");
+                }
+            } catch (Exception e) {
+                ConsoleUtils.printError("Error in enrollment management: " + e.getMessage());
+                ConsoleUtils.pressEnterToContinue();
+            }
+        }
+    }
+
+    private static void displayEnrollmentMenu() {
+        ConsoleUtils.printSubHeader("Enrollment Management");
+        System.out.println("1. Enroll Student in Course");
+        System.out.println("2. View Enrollments by Student");
+        System.out.println("3. View All Enrollments");
+        System.out.println("4. Update Enrollment Status");
+        System.out.println("0. Back to Main Menu");
+        ConsoleUtils.printSeparator();
+    }
+
+    private static void enrollStudent() {
+        try {
+            ConsoleUtils.printSubHeader("Enroll Student in Course");
+
+            int studentId = ConsoleUtils.readInt("Enter student ID: ");
+            int courseId = ConsoleUtils.readInt("Enter course ID: ");
+
+            Enrollment enrollment = enrollmentService.enrollStudent(studentId, courseId);
+
+            ConsoleUtils.printSuccess("Student enrolled successfully!");
+            System.out.println(enrollment);
+            ConsoleUtils.pressEnterToContinue();
+        } catch (EntityNotFoundException e) {
+            ConsoleUtils.printError(e.getMessage());
+            ConsoleUtils.pressEnterToContinue();
+        } catch (IllegalStateException e) {
+            ConsoleUtils.printError("Enrollment error: " + e.getMessage());
+            ConsoleUtils.pressEnterToContinue();
+        }
+    }
+
+    private static void viewEnrollmentsByStudent() {
+        try {
+            int studentId = ConsoleUtils.readInt("Enter student ID: ");
+            List<Enrollment> enrollments = enrollmentService.getEnrollmentsByStudentId(studentId);
+
+            ConsoleUtils.printSubHeader("Enrollments for Student ID: " + studentId);
+
+            if (enrollments.isEmpty()) {
+                ConsoleUtils.printInfo("No enrollments found for this student.");
+            } else {
+                System.out.printf("%-10s %-15s %-15s %-15s%n",
+                        "Enroll ID", "Course ID", "Date", "Status");
+                ConsoleUtils.printSeparator();
+                for (Enrollment enrollment : enrollments) {
+                    System.out.printf("%-10d %-15d %-15s %-15s%n",
+                            enrollment.getId(),
+                            enrollment.getCourseId(),
+                            enrollment.getEnrollmentDate(),
+                            enrollment.getStatus());
+                }
+            }
+            ConsoleUtils.pressEnterToContinue();
+        } catch (EntityNotFoundException e) {
+            ConsoleUtils.printError(e.getMessage());
+            ConsoleUtils.pressEnterToContinue();
+        }
+    }
+
+    private static void viewAllEnrollments() {
+        ConsoleUtils.printSubHeader("All Enrollments");
+
+        List<Enrollment> enrollments = enrollmentService.getAll();
+        if (enrollments.isEmpty()) {
+            ConsoleUtils.printInfo("No enrollments found.");
+        } else {
+            System.out.printf("%-10s %-15s %-15s %-15s %-15s%n",
+                    "Enroll ID", "Student ID", "Course ID", "Date", "Status");
+            ConsoleUtils.printSeparator();
+            for (Enrollment enrollment : enrollments) {
+                System.out.printf("%-10d %-15d %-15d %-15s %-15s%n",
+                        enrollment.getId(),
+                        enrollment.getStudentId(),
+                        enrollment.getCourseId(),
+                        enrollment.getEnrollmentDate(),
+                        enrollment.getStatus());
+            }
+        }
+        ConsoleUtils.pressEnterToContinue();
+    }
+
+    private static void updateEnrollmentStatus() {
+        try {
+            ConsoleUtils.printSubHeader("Update Enrollment Status");
+
+            int enrollmentId = ConsoleUtils.readInt("Enter enrollment ID: ");
+            Enrollment enrollment = enrollmentService.getById(enrollmentId);
+
+            System.out.println("Current enrollment: " + enrollment);
+            System.out.println("\nAvailable statuses:");
+            System.out.println("1. ACTIVE");
+            System.out.println("2. COMPLETED");
+            System.out.println("3. CANCELLED");
+
+            int statusChoice = ConsoleUtils.readIntInRange("Select new status: ", 1, 3);
+
+            EnrollmentStatus newStatus = switch (statusChoice) {
+                case 1 -> EnrollmentStatus.ACTIVE;
+                case 2 -> EnrollmentStatus.COMPLETED;
+                case 3 -> EnrollmentStatus.CANCELLED;
+                default -> throw new IllegalStateException("Unexpected value: " + statusChoice);
+            };
+
+            enrollmentService.updateEnrollmentStatus(enrollmentId, newStatus);
+            ConsoleUtils.printSuccess("Enrollment status updated successfully!");
+            ConsoleUtils.pressEnterToContinue();
+        } catch (EntityNotFoundException e) {
+            ConsoleUtils.printError(e.getMessage());
+            ConsoleUtils.pressEnterToContinue();
+        }
+    }
+
+    // ==================== STATISTICS ====================
+
+    private static void displayStatistics() {
+        ConsoleUtils.printSubHeader("System Statistics");
+
+        System.out.println("Students:");
+        System.out.println("  Total: " + studentService.getTotalCount());
+        System.out.println("  Active: " + studentService.getActiveCount());
+
+        System.out.println("\nCourses:");
+        System.out.println("  Total: " + courseService.getTotalCount());
+        System.out.println("  Active: " + courseService.getActiveCount());
+
+        System.out.println("\nEnrollments:");
+        System.out.println("  Total: " + enrollmentService.getTotalCount());
+        System.out.println("  Active: " + enrollmentService.getEnrollmentCountByStatus(EnrollmentStatus.ACTIVE));
+        System.out.println("  Completed: " + enrollmentService.getEnrollmentCountByStatus(EnrollmentStatus.COMPLETED));
+        System.out.println("  Cancelled: " + enrollmentService.getEnrollmentCountByStatus(EnrollmentStatus.CANCELLED));
+
+        ConsoleUtils.pressEnterToContinue();
     }
 }
