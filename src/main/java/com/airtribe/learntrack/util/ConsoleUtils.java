@@ -5,6 +5,14 @@ import java.util.Scanner;
 public class ConsoleUtils {
     private static final Scanner scanner = new Scanner(System.in);
 
+    /**
+     * Private constructor to prevent instantiation.
+     * This is a utility class and should not be instantiated.
+     */
+    private ConsoleUtils() {
+        throw new UnsupportedOperationException("Utility class cannot be instantiated");
+    }
+
     public static void printHeader(String title) {
         System.out.println("\n" + "=".repeat(60));
         System.out.println("  " + title);
