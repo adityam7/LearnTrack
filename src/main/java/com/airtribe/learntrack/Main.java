@@ -22,33 +22,35 @@ public class Main {
     private static EnrollmentService enrollmentService;
 
     public static void main(String[] args) {
-        initializeServices();
-        ConsoleUtils.printHeader("LearnTrack - Course Management System");
+        try {
+            initializeServices();
+            ConsoleUtils.printHeader("LearnTrack - Course Management System");
 
-        boolean running = true;
-        while (running) {
-            try {
-                displayMainMenu();
-                int choice = ConsoleUtils.readIntInRange("Enter your choice: ", 0, 4);
+            boolean running = true;
+            while (running) {
+                try {
+                    displayMainMenu();
+                    int choice = ConsoleUtils.readIntInRange("Enter your choice: ", 0, 4);
 
-                switch (choice) {
-                    case 1 -> handleStudentManagement();
-                    case 2 -> handleCourseManagement();
-                    case 3 -> handleEnrollmentManagement();
-                    case 4 -> displayStatistics();
-                    case 0 -> {
-                        running = false;
-                        ConsoleUtils.printSuccess("Thank you for using LearnTrack. Goodbye!");
+                    switch (choice) {
+                        case 1 -> handleStudentManagement();
+                        case 2 -> handleCourseManagement();
+                        case 3 -> handleEnrollmentManagement();
+                        case 4 -> displayStatistics();
+                        case 0 -> {
+                            running = false;
+                            ConsoleUtils.printSuccess("Thank you for using LearnTrack. Goodbye!");
+                        }
+                        default -> ConsoleUtils.printError("Invalid option. Please try again.");
                     }
-                    default -> ConsoleUtils.printError("Invalid option. Please try again.");
+                } catch (Exception e) {
+                    ConsoleUtils.printError("An unexpected error occurred: " + e.getMessage());
+                    ConsoleUtils.pressEnterToContinue();
                 }
-            } catch (Exception e) {
-                ConsoleUtils.printError("An unexpected error occurred: " + e.getMessage());
-                ConsoleUtils.pressEnterToContinue();
             }
+        } finally {
+            ConsoleUtils.closeScanner();
         }
-
-        ConsoleUtils.closeScanner();
     }
 
     private static void initializeServices() {
