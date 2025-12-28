@@ -35,13 +35,18 @@ public class ConsoleUtils {
         System.out.println("[INFO] " + message);
     }
 
+    public static void printWarning(String message) {
+        System.out.println("[WARNING] " + message);
+    }
+
     public static void printSeparator() {
         System.out.println("-".repeat(60));
     }
 
     public static String readLine(String prompt) {
         System.out.print(prompt);
-        return scanner.nextLine().trim();
+        String input = scanner.nextLine();
+        return (input != null) ? input.trim() : "";
     }
 
     public static int readInt(String prompt) {

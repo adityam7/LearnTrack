@@ -1,6 +1,8 @@
 package com.airtribe.learntrack.service;
 
+import com.airtribe.learntrack.entity.Course;
 import com.airtribe.learntrack.entity.Enrollment;
+import com.airtribe.learntrack.entity.Student;
 import com.airtribe.learntrack.enums.EnrollmentStatus;
 import com.airtribe.learntrack.exception.EntityNotFoundException;
 import com.airtribe.learntrack.repository.CourseRepository;
@@ -43,13 +45,21 @@ public class EnrollmentService extends BaseService<Enrollment, EnrollmentReposit
      */
     public Enrollment enrollStudent(int studentId, int courseId) {
         // Validate student exists
-        if (!studentRepository.exists(studentId)) {
-            throw new EntityNotFoundException("Student", studentId);
+        Student student = studentRepository.getById(studentId);
+
+        // Validate student is active
+        if (!student.isActive()) {
+            throw new IllegalStateException(
+                    "Cannot enroll inactive student. Student ID: " + studentId);
         }
 
         // Validate course exists
-        if (!courseRepository.exists(courseId)) {
-            throw new EntityNotFoundException("Course", courseId);
+        Course course = courseRepository.getById(courseId);
+
+        // Validate course is active
+        if (!course.isActive()) {
+            throw new IllegalStateException(
+                    "Cannot enroll in inactive course. Course ID: " + courseId);
         }
 
         // Check if already enrolled
